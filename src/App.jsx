@@ -81,6 +81,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState("home");
   const [cart, setCart] = useState([]);
   const [quantities, setQuantities] = useState({});
+  const [guestCount, setGuestCount] = useState(200); // Changed to number
   const [formData, setFormData] = useState({
     name: "",
     restaurantName: "",
@@ -89,12 +90,14 @@ function App() {
   });
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Calculate cart total
-  const cartTotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const estimatedSavings = cartTotal * 0.35; // 35% savings vs US suppliers
+  // Calculate cart total with guest multiplier
+  const parsedGuestCount = Math.max(1, guestCount);
+  const cartTotal =
+    cart.reduce((sum, item) => sum + item.price * item.quantity, 0) *
+    parsedGuestCount;
+
+  const estimatedSavings = cartTotal * 0.35;
+  const perPersonCost = cart.length > 0 ? cartTotal / parsedGuestCount : 0;
 
   const addToCart = (product) => {
     const quantity = quantities[product.id] || 1;
@@ -140,7 +143,9 @@ function App() {
     console.log("Enquiry Submitted:", {
       ...formData,
       cart,
+      guestCount,
       totalCost: cartTotal,
+      perPersonCost,
       estimatedSavings,
     });
     setSubmitSuccess(true);
@@ -150,6 +155,27 @@ function App() {
       setCart([]);
       setFormData({ name: "", restaurantName: "", email: "", message: "" });
     }, 3000);
+  };
+
+  // Handle guest count change
+  const handleGuestCountChange = (e) => {
+    const value = e.target.value;
+    // Allow empty string temporarily for better UX
+    if (value === "") {
+      setGuestCount(1);
+    } else if (/^\d+$/.test(value)) {
+      const numValue = parseInt(value, 10);
+      if (numValue > 0) {
+        setGuestCount(numValue);
+      }
+    }
+  };
+
+  // Handle blur to ensure minimum value
+  const handleGuestCountBlur = () => {
+    if (guestCount < 1) {
+      setGuestCount(1);
+    }
   };
 
   // Home Page
@@ -205,17 +231,46 @@ function App() {
   const ProductsPage = () => (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Available Products
-          </h2>
-          <button
-            onClick={() => setCurrentPage("cart")}
-            className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <ShoppingCart size={20} />
-            Cart ({cart.length})
-          </button>
+        <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Available Products
+            </h2>
+            <p className="text-gray-600 mt-1">
+              Select items and quantities per person
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+              <label className="text-sm text-gray-600 block mb-1">
+                Number of Guests
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={guestCount}
+                onChange={handleGuestCountChange}
+                onBlur={handleGuestCountBlur}
+                className="w-24 px-3 py-1 border border-gray-300 rounded-lg text-center font-semibold text-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
+
+            <button
+              onClick={() => setCurrentPage("cart")}
+              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors h-fit"
+            >
+              <ShoppingCart size={20} />
+              Cart ({cart.length})
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+          <p className="text-amber-800 font-medium">
+            💡 Tip: Enter quantities per person. Total cost will be calculated
+            for {parsedGuestCount} guests.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -241,23 +296,30 @@ function App() {
                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                   {product.description}
                 </p>
-                <div className="text-xs text-gray-500 mb-4 uppercase tracking-wide">
+                <div className="text-xs text-gray-500 mb-2 uppercase tracking-wide">
                   {product.unit}
+                </div>
+                <div className="text-sm text-amber-700 font-medium mb-4">
+                  Per person × {parsedGuestCount} guests
                 </div>
 
                 <div className="flex gap-2 items-center">
                   <input
                     type="number"
-                    min="1"
+                    min={1}
+                    step={1}
                     value={quantities[product.id] || 1}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
                       setQuantities({
                         ...quantities,
-                        [product.id]: parseInt(e.target.value) || 1,
-                      })
-                    }
-                    className="w-16 px-2 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                        [product.id]: Math.max(1, value),
+                      });
+                    }}
+                    className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center font-semibold text-lg
+             focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   />
+
                   <button
                     onClick={() => addToCart(product)}
                     className="flex-1 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors font-medium shadow-sm hover:shadow-md"
@@ -277,9 +339,30 @@ function App() {
   const CartPage = () => (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">
-          Cost Calculator
-        </h2>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Cost Calculator
+            </h2>
+            <p className="text-gray-600 mt-1">
+              Calculating for {parsedGuestCount} guests
+            </p>
+          </div>
+
+          <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+            <label className="text-sm text-gray-600 block mb-1">
+              Number of Guests
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={guestCount}
+              onChange={handleGuestCountChange}
+              onBlur={handleGuestCountBlur}
+              className="w-24 px-3 py-1 border border-gray-300 rounded-lg text-center font-semibold text-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            />
+          </div>
+        </div>
 
         {cart.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
@@ -306,21 +389,30 @@ function App() {
                   />
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 text-sm">
                       ${item.price.toFixed(2)} {item.unit}
+                    </p>
+                    <p className="text-amber-600 text-sm font-medium">
+                      {item.quantity} × {parsedGuestCount} guests ={" "}
+                      {(item.quantity * parsedGuestCount).toFixed(1)} units
                     </p>
                   </div>
                   <input
                     type="number"
                     min="0"
+                    step="0.1"
                     value={item.quantity}
                     onChange={(e) =>
-                      updateCartQuantity(item.id, parseInt(e.target.value) || 0)
+                      updateCartQuantity(
+                        item.id,
+                        parseFloat(e.target.value) || 0
+                      )
                     }
                     className="w-20 px-3 py-2 border border-gray-300 rounded-lg"
                   />
                   <div className="text-xl font-semibold text-gray-900 w-32 text-right">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    $
+                    {(item.price * item.quantity * parsedGuestCount).toFixed(2)}
                   </div>
                 </div>
               ))}
@@ -328,9 +420,21 @@ function App() {
 
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <div className="space-y-3">
+                <div className="flex justify-between text-sm text-gray-600 pb-2 border-b">
+                  <span>Number of Guests:</span>
+                  <span className="font-semibold text-gray-900">
+                    {parsedGuestCount} people
+                  </span>
+                </div>
                 <div className="flex justify-between text-lg">
-                  <span className="text-gray-700">Subtotal:</span>
+                  <span className="text-gray-700">Total Cost:</span>
                   <span className="font-semibold">${cartTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-blue-600">
+                  <span>Cost Per Person:</span>
+                  <span className="font-semibold">
+                    ${perPersonCost.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-lg text-green-600">
                   <span>Estimated Savings (vs US suppliers):</span>
@@ -339,7 +443,7 @@ function App() {
                   </span>
                 </div>
                 <div className="border-t pt-3 flex justify-between text-2xl font-bold">
-                  <span>Total Cost:</span>
+                  <span>Final Total:</span>
                   <span className="text-amber-600">
                     ${cartTotal.toFixed(2)}
                   </span>
@@ -400,11 +504,31 @@ function App() {
               <div className="font-semibold text-gray-900 mb-2">
                 Your Cart Summary:
               </div>
-              <div className="text-2xl font-bold text-amber-600">
-                Total: ${cartTotal.toFixed(2)}
-              </div>
-              <div className="text-sm text-green-600">
-                Potential Savings: ${estimatedSavings.toFixed(2)}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-gray-600">Number of Guests:</div>
+                  <div className="text-xl font-bold text-gray-900">
+                    {parsedGuestCount} people
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-600">Total Cost:</div>
+                  <div className="text-xl font-bold text-amber-600">
+                    ${cartTotal.toFixed(2)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-600">Cost Per Person:</div>
+                  <div className="text-lg font-semibold text-blue-600">
+                    ${perPersonCost.toFixed(2)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-gray-600">Potential Savings:</div>
+                  <div className="text-lg font-semibold text-green-600">
+                    ${estimatedSavings.toFixed(2)}
+                  </div>
+                </div>
               </div>
             </div>
 
