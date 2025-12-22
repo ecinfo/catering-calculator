@@ -3,11 +3,21 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+
   server: {
-    host: true, // Enables external network access
+    host: true, // Allows access from LAN / ngrok
+    port: 3000,
+    open: true,
+
+    // Allow ngrok and similar tunneling hosts
     allowedHosts: [
-      "349bbdf76349.ngrok-free.app",
-      ".ngrok-free.app", // Covers all ngrok-free.app subdomains
+      ".ngrok-free.app", // allows all ngrok-free subdomains
     ],
+  },
+
+  preview: {
+    port: 4173,
+    host: true,
+    allowedHosts: [".ngrok-free.app"],
   },
 });
