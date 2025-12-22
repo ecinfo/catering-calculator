@@ -2,7 +2,6 @@ import React from "react";
 import RecipeCard from "./RecipeCard";
 
 const RecipeCategory = ({ category, recipes, onViewRecipe }) => {
-  // Add onViewRecipe prop
   const getCategoryIcon = (cat) => {
     const icons = {
       "Vegetarian Party Food": "🥘",
@@ -16,25 +15,33 @@ const RecipeCategory = ({ category, recipes, onViewRecipe }) => {
   };
 
   return (
-    <div className="mb-12">
-      <div className="flex items-center gap-3 mb-6">
-        <span className="text-3xl">{getCategoryIcon(category)}</span>
-        <h2 className="text-2xl font-bold text-gray-900">{category}</h2>
-        <span className="px-3 py-1 text-sm font-semibold rounded-full bg-amber-100 text-amber-800">
+    <section className="mb-10 sm:mb-12">
+      {/* Category Header */}
+      <div className="flex flex-wrap items-center gap-3 mb-5 sm:mb-6">
+        <span className="text-2xl sm:text-3xl">
+          {getCategoryIcon(category)}
+        </span>
+
+        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+          {category}
+        </h2>
+
+        <span className="px-3 py-1 text-xs font-semibold rounded-full sm:text-sm bg-amber-100 text-amber-800">
           {recipes.length} Recipes
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Recipe Grid */}
+      <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
         {recipes.map((recipe) => (
           <RecipeCard
             key={recipe.id}
             recipe={recipe}
-            onViewRecipe={onViewRecipe} // Pass prop down
+            onViewRecipe={onViewRecipe}
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 

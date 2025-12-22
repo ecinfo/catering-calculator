@@ -12,14 +12,15 @@ const RecipeCard = ({ recipe, onViewRecipe }) => {
   };
 
   return (
-    <div className="overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-lg rounded-xl hover:shadow-2xl hover:-translate-y-1 group">
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="text-xl font-bold text-gray-900 transition-colors group-hover:text-amber-700">
+    <div className="flex flex-col h-full overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-lg rounded-xl hover:shadow-2xl md:hover:-translate-y-1">
+      <div className="flex flex-col h-full p-4 sm:p-5">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h3 className="text-lg font-bold leading-snug text-gray-900 sm:text-xl">
             {recipe.name}
           </h3>
           <span
-            className={`text-xs font-semibold px-3 py-1 rounded-full ${getDifficultyColor(
+            className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full ${getDifficultyColor(
               recipe.difficulty
             )}`}
           >
@@ -27,9 +28,13 @@ const RecipeCard = ({ recipe, onViewRecipe }) => {
           </span>
         </div>
 
-        <p className="mb-4 text-gray-600 line-clamp-2">{recipe.description}</p>
+        {/* Description */}
+        <p className="mb-4 text-sm text-gray-600 sm:text-base line-clamp-2">
+          {recipe.description}
+        </p>
 
-        <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+        {/* Meta Info */}
+        <div className="flex flex-wrap items-center mb-4 text-sm text-gray-500 gap-x-4 gap-y-2">
           <div className="flex items-center gap-1">
             <Clock size={16} />
             <span>{recipe.prepTime}</span>
@@ -40,11 +45,12 @@ const RecipeCard = ({ recipe, onViewRecipe }) => {
           </div>
         </div>
 
+        {/* Products */}
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <ShoppingBag size={16} className="text-amber-600" />
             <span className="text-sm font-semibold text-gray-700">
-              Required Products:
+              Required Products
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -59,15 +65,17 @@ const RecipeCard = ({ recipe, onViewRecipe }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        {/* Footer */}
+        <div className="flex flex-col gap-3 pt-4 mt-auto border-t border-gray-100 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <ChefHat size={16} />
             <span className="font-medium">{recipe.category}</span>
           </div>
+
           {onViewRecipe && (
             <button
               onClick={() => onViewRecipe(recipe)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors rounded-lg bg-amber-600 hover:bg-amber-700"
+              className="flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-medium text-white transition-colors rounded-lg bg-amber-600 hover:bg-amber-700 sm:w-auto"
             >
               <Eye size={16} />
               View Recipe

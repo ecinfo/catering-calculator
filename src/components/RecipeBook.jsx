@@ -4,37 +4,31 @@ import RecipeFilter from "./RecipeFilter";
 import { recipesData } from "../data/recipes";
 
 const RecipeBook = ({ onViewRecipe }) => {
-  // Add onViewRecipe prop
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProducts, setSelectedProducts] = useState([]);
 
-  // Get unique categories
+  /* -----------------------------
+     Derived Data
+  ----------------------------- */
+
   const categories = useMemo(() => {
-    const uniqueCategories = [
-      ...new Set(recipesData.map((recipe) => recipe.category)),
-    ];
-    return ["All", ...uniqueCategories];
+    const unique = [...new Set(recipesData.map((recipe) => recipe.category))];
+    return ["All", ...unique];
   }, []);
 
-  // Get all unique products from recipes
   const allProducts = useMemo(() => {
-    const productSet = new Set();
-    recipesData.forEach((recipe) => {
-      recipe.products.forEach((product) => productSet.add(product));
-    });
-    return Array.from(productSet).sort();
+    const set = new Set();
+    recipesData.forEach((recipe) => recipe.products.forEach((p) => set.add(p)));
+    return Array.from(set).sort();
   }, []);
 
-  // Filter recipes based on selected criteria
   const filteredRecipes = useMemo(() => {
     return recipesData.filter((recipe) => {
-      // Category filter
       if (selectedCategory !== "All" && recipe.category !== selectedCategory) {
         return false;
       }
 
-      // Search term filter
       if (
         searchTerm &&
         !recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -43,20 +37,18 @@ const RecipeBook = ({ onViewRecipe }) => {
         return false;
       }
 
-      // Product filter
       if (selectedProducts.length > 0) {
         const recipeProducts = recipe.products.map((p) => p.toLowerCase());
-        const hasSelectedProduct = selectedProducts.some((product) =>
+        const hasProduct = selectedProducts.some((product) =>
           recipeProducts.includes(product.toLowerCase())
         );
-        if (!hasSelectedProduct) return false;
+        if (!hasProduct) return false;
       }
 
       return true;
     });
   }, [selectedCategory, searchTerm, selectedProducts]);
 
-  // Group filtered recipes by category
   const recipesByCategory = useMemo(() => {
     const grouped = {};
     filteredRecipes.forEach((recipe) => {
@@ -69,28 +61,33 @@ const RecipeBook = ({ onViewRecipe }) => {
   }, [filteredRecipes]);
 
   const handleProductToggle = (product) => {
-    setSelectedProducts((prev) => {
-      if (prev.includes(product)) {
-        return prev.filter((p) => p !== product);
-      } else {
-        return [...prev, product];
-      }
-    });
+    setSelectedProducts((prev) =>
+      prev.includes(product)
+        ? prev.filter((p) => p !== product)
+        : [...prev, product]
+    );
   };
+
+  /* -----------------------------
+     Render
+  ----------------------------- */
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-      <div className="px-4 py-8 mx-auto max-w-7xl">
-        <div className="mb-10 text-center">
-          <h1 className="mb-3 text-4xl font-bold text-gray-900">
-            Netra's Recipe Collection
+      <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 sm:py-8">
+        {/* Hero */}
+        <div className="mb-8 text-center sm:mb-10">
+          <h1 className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl md:text-4xl">
+            Netra&apos;s Recipe Collection
           </h1>
-          <p className="max-w-3xl mx-auto text-lg text-gray-600">
-            Discover delicious recipes made easy with Netra's instant products.
-            Filter by category, ingredients, or search for your favorite dishes.
+          <p className="max-w-3xl mx-auto text-sm text-gray-600 sm:text-base md:text-lg">
+            Discover delicious recipes made easy with Netra&apos;s instant
+            products. Filter by category, ingredients, or search for your
+            favorite dishes.
           </p>
         </div>
 
+        {/* Filters */}
         <RecipeFilter
           categories={categories}
           selectedCategory={selectedCategory}
@@ -102,20 +99,21 @@ const RecipeBook = ({ onViewRecipe }) => {
           onProductToggle={handleProductToggle}
         />
 
-        <div className="mt-8">
+        {/* Results */}
+        <div className="mt-6 sm:mt-8">
           {Object.keys(recipesByCategory).length > 0 ? (
             Object.entries(recipesByCategory).map(([category, recipes]) => (
               <RecipeCategory
                 key={category}
                 category={category}
                 recipes={recipes}
-                onViewRecipe={onViewRecipe} // Pass prop down
+                onViewRecipe={onViewRecipe}
               />
             ))
           ) : (
-            <div className="p-8 text-center bg-white shadow-md rounded-xl">
-              <p className="mb-4 text-lg text-gray-600">
-                No recipes found matching your criteria. Try different filters!
+            <div className="p-6 text-center bg-white shadow-md sm:p-8 rounded-xl">
+              <p className="mb-4 text-sm text-gray-600 sm:text-lg">
+                No recipes found matching your criteria. Try different filters.
               </p>
               <button
                 onClick={() => {
@@ -123,7 +121,7 @@ const RecipeBook = ({ onViewRecipe }) => {
                   setSearchTerm("");
                   setSelectedProducts([]);
                 }}
-                className="px-6 py-3 font-semibold text-white transition-colors rounded-lg bg-amber-600 hover:bg-amber-700"
+                className="w-full px-6 py-3 font-semibold text-white transition-colors rounded-lg sm:w-auto bg-amber-600 hover:bg-amber-700"
               >
                 Reset All Filters
               </button>
@@ -131,17 +129,20 @@ const RecipeBook = ({ onViewRecipe }) => {
           )}
         </div>
 
-        <div className="p-6 mt-12 bg-white border shadow-lg rounded-xl border-amber-200">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 rounded-full bg-amber-100">
+        {/* Tips */}
+        <div className="p-5 mt-10 bg-white border shadow-lg sm:mt-12 sm:p-6 border-amber-200 rounded-xl">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-full bg-amber-100 shrink-0">
               <span className="text-xl font-bold text-amber-600">💡</span>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Recipe Tips</h3>
-              <p className="text-gray-600">
-                Each recipe uses Netra's instant products. Simply follow package
-                instructions and combine as shown in recipes for authentic taste
-                in minutes!
+              <h3 className="mb-1 text-base font-bold text-gray-900 sm:text-lg">
+                Recipe Tips
+              </h3>
+              <p className="text-sm text-gray-600 sm:text-base">
+                Each recipe uses Netra&apos;s instant products. Simply follow
+                the package instructions and combine as shown in the recipes for
+                authentic taste in minutes.
               </p>
             </div>
           </div>

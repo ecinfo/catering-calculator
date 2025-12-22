@@ -4,26 +4,21 @@ import { Package, Users, Weight, Plus, Minus } from "lucide-react";
 const ProductCard = ({ product, quantity, onAdd, onRemove }) => {
   const extractPrice = (priceString) => {
     if (!priceString) return 0;
-
-    // Remove currency symbols and non-numeric characters except dot
     const numeric = priceString.replace(/[^0-9.]/g, "");
     const parsed = parseFloat(numeric);
-
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  console.log("Product price string:", product.price);
   const price = extractPrice(product.price);
-  console.log("Extracted price:", price);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-sm rounded-2xl hover:shadow-xl hover:-translate-y-1">
-      {/* Image Section */}
-      <div className="relative h-48 overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-sm rounded-2xl md:hover:shadow-xl md:hover:-translate-y-1">
+      {/* Image */}
+      <div className="relative overflow-hidden h-44 sm:h-48">
         <img
           src={product.image}
           alt={product.name}
-          className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+          className="object-cover w-full h-full md:transition-transform md:duration-300 md:hover:scale-105"
         />
 
         {/* Category */}
@@ -32,15 +27,15 @@ const ProductCard = ({ product, quantity, onAdd, onRemove }) => {
         </div>
 
         {/* Price Badge */}
-        <div className="absolute px-3 py-1 text-sm font-bold text-white rounded-full shadow-lg top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500">
+        <div className="absolute px-3 py-1 text-xs font-bold text-white rounded-full shadow-lg top-3 right-3 sm:text-sm bg-gradient-to-r from-amber-500 to-orange-500">
           {product.price}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 p-5">
+      <div className="flex flex-col flex-1 p-4 sm:p-5">
         {/* Title */}
-        <h3 className="text-lg font-semibold leading-tight text-gray-900">
+        <h3 className="text-base font-semibold leading-tight text-gray-900 sm:text-lg">
           {product.name}
         </h3>
 
@@ -49,7 +44,7 @@ const ProductCard = ({ product, quantity, onAdd, onRemove }) => {
           {product.description}
         </p>
 
-        {/* Meta Info */}
+        {/* Meta */}
         <div className="grid grid-cols-2 gap-3 mt-4 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <Users size={16} />
@@ -61,7 +56,7 @@ const ProductCard = ({ product, quantity, onAdd, onRemove }) => {
             <span>{product.weight}</span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center col-span-2 gap-2">
             <Package size={16} />
             <span>${price.toFixed(2)} per pack</span>
           </div>
@@ -72,13 +67,13 @@ const ProductCard = ({ product, quantity, onAdd, onRemove }) => {
 
         {/* Footer */}
         <div className="pt-4 mt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            {/* Quantity Controls */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Quantity / CTA */}
             {quantity > 0 ? (
               <div className="flex items-center gap-3">
                 <button
                   onClick={onRemove}
-                  className="flex items-center justify-center text-red-600 rounded-lg w-9 h-9 bg-red-50 hover:bg-red-100"
+                  className="flex items-center justify-center w-10 h-10 text-red-600 rounded-lg bg-red-50 hover:bg-red-100"
                 >
                   <Minus size={18} />
                 </button>
@@ -89,7 +84,7 @@ const ProductCard = ({ product, quantity, onAdd, onRemove }) => {
 
                 <button
                   onClick={onAdd}
-                  className="flex items-center justify-center text-green-600 rounded-lg w-9 h-9 bg-green-50 hover:bg-green-100"
+                  className="flex items-center justify-center w-10 h-10 text-green-600 rounded-lg bg-green-50 hover:bg-green-100"
                 >
                   <Plus size={18} />
                 </button>
@@ -97,7 +92,7 @@ const ProductCard = ({ product, quantity, onAdd, onRemove }) => {
             ) : (
               <button
                 onClick={onAdd}
-                className="px-5 py-2.5 text-sm font-medium text-white rounded-lg bg-amber-600 hover:bg-amber-700"
+                className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-white rounded-lg bg-amber-600 hover:bg-amber-700"
               >
                 Add to Cart
               </button>
@@ -107,7 +102,7 @@ const ProductCard = ({ product, quantity, onAdd, onRemove }) => {
             <div className="text-right">
               <div className="text-xs text-gray-500">Total</div>
               <div className="text-lg font-bold text-gray-900">
-                <span>${price.toFixed(2)}</span>
+                ${price.toFixed(2)}
               </div>
             </div>
           </div>

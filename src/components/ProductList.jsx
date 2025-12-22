@@ -61,14 +61,14 @@ const ProductList = ({ cart, addToCart, removeFromCart }) => {
         {/* Header */}
         <div className="mb-8 text-center sm:mb-12">
           <div className="inline-flex items-center justify-center mb-4 rounded-full w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-amber-500 to-orange-500">
-            <ShoppingBag size={28} className="text-white sm:size-32" />
+            <ShoppingBag size={26} className="text-white" />
           </div>
 
           <h1 className="mb-2 text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl">
             Netra&apos;s Product Range
           </h1>
 
-          <p className="max-w-3xl mx-auto text-lg text-gray-600">
+          <p className="max-w-3xl mx-auto text-sm text-gray-600 sm:text-base lg:text-lg">
             Premium instant food products imported from India. Perfect for US
             restaurants, caterers, and event planners looking for authentic
             Indian flavors.
@@ -115,8 +115,8 @@ const ProductList = ({ cart, addToCart, removeFromCart }) => {
               })}
             </div>
           ) : (
-            <div className="p-6 text-center bg-white shadow-md rounded-xl sm:p-8">
-              <p className="mb-4 text-gray-600">
+            <div className="p-6 text-center bg-white shadow-md sm:p-8 rounded-xl">
+              <p className="mb-4 text-sm text-gray-600 sm:text-base">
                 No products found matching your criteria.
               </p>
               <button
@@ -125,7 +125,7 @@ const ProductList = ({ cart, addToCart, removeFromCart }) => {
                   setSearchTerm("");
                   setSortBy("name");
                 }}
-                className="px-6 py-3 font-semibold text-white transition rounded-lg bg-amber-600 hover:bg-amber-700"
+                className="w-full px-6 py-3 font-semibold text-white transition rounded-lg sm:w-auto bg-amber-600 hover:bg-amber-700"
               >
                 Reset Filters
               </button>
@@ -133,21 +133,21 @@ const ProductList = ({ cart, addToCart, removeFromCart }) => {
           )}
         </div>
 
-        {/* Footer Section */}
-        <div className="p-6 mt-10 text-white shadow-lg sm:mt-14 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl sm:p-8">
-          <h3 className="mb-6 text-xl font-bold text-center sm:text-2xl">
+        {/* Footer */}
+        <div className="p-5 mt-10 text-white shadow-lg sm:mt-14 sm:p-8 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl">
+          <h3 className="mb-6 text-lg font-bold text-center sm:text-xl lg:text-2xl">
             Why Choose Netra&apos;s Products?
           </h3>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 text-center sm:grid-cols-3">
             {[
               ["⚡", "Quick & Easy", "Ready in minutes with minimal effort"],
               ["👨‍🍳", "Chef-Quality", "Restaurant-grade taste at home"],
               ["🌿", "Natural Ingredients", "No artificial preservatives"],
             ].map(([icon, title, desc]) => (
-              <div key={title} className="text-center">
+              <div key={title}>
                 <div className="mb-2 text-3xl">{icon}</div>
-                <h4 className="mb-1 text-lg font-bold">{title}</h4>
+                <h4 className="mb-1 text-base font-bold sm:text-lg">{title}</h4>
                 <p className="text-sm text-amber-100">{desc}</p>
               </div>
             ))}
