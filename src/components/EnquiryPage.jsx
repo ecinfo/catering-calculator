@@ -330,7 +330,7 @@ const SummaryCard = ({
 
 const FormInput = ({ label, icon, ...props }) => (
   <div>
-    <label className="flex items-center block gap-2 mb-1 font-medium text-gray-700">
+    <label className="flex items-center gap-2 mb-1 font-medium text-gray-700">
       {icon}
       {label}
     </label>
