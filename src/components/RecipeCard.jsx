@@ -74,7 +74,10 @@ const RecipeCard = ({ recipe, onViewRecipe }) => {
 
           {onViewRecipe && (
             <button
-              onClick={() => onViewRecipe(recipe)}
+              onClick={(e) => {
+                e.stopPropagation(); // 👈 prevents page flip
+                onViewRecipe(recipe);
+              }}
               className="flex items-center justify-center w-full gap-2 px-4 py-2 text-sm font-medium text-white transition-colors rounded-lg bg-amber-600 hover:bg-amber-700 sm:w-auto"
             >
               <Eye size={16} />

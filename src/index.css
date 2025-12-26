@@ -118,6 +118,9 @@ textarea:focus-visible {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+.page {
+  background: white;
+}
 
 /* Custom Shadows */
 .shadow-custom {
