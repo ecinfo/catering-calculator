@@ -1,234 +1,170 @@
 import React from "react";
 import CartItem from "./CartItem";
-import { ShoppingCart, ArrowRight, Users } from "lucide-react";
+import {
+  ShoppingCart,
+  ArrowRight,
+  Users,
+  Package,
+  TrendingDown,
+  DollarSign,
+  Sparkles,
+} from "lucide-react";
+
+/* ======================================================
+   CART PAGE
+====================================================== */
 
 const CartPage = ({
   cart,
   guestCount,
   parsedGuestCount,
-  cartTotal,
-  perPersonCost,
+  cartTotal, // subtotal (before discount)
   estimatedSavings,
+  perPersonCost,
   handleGuestCountChange,
   handleGuestCountBlur,
   updateCartQuantity,
   removeFromCart,
   navigateTo,
 }) => {
+  const finalTotal = Math.max(cartTotal - estimatedSavings, 0);
+
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  const savingsPercentage =
+    cartTotal > 0 ? ((estimatedSavings / cartTotal) * 100).toFixed(1) : 0;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-6xl px-4 py-6 mx-auto sm:py-8">
-        {/* Header */}
-        <div className="flex flex-col gap-4 mb-6 sm:mb-8 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50/30 to-amber-50/40">
+      <div className="px-4 py-8 mx-auto max-w-7xl sm:py-12 lg:px-8">
+        {/* ================= HEADER ================= */}
+        <div className="flex flex-col gap-6 mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-2 shadow-md bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl">
+              <ShoppingCart className="text-white" size={24} />
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900">
               Cost Calculator
             </h2>
-            <p className="mt-1 text-sm text-gray-600 sm:text-base">
-              Calculating for {parsedGuestCount} guests
-            </p>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row">
-            {/* Guest Count */}
-            <div className="px-4 py-3 bg-white border border-gray-200 shadow-sm sm:px-6 rounded-xl">
-              <label className="block mb-2 text-sm text-gray-600">
-                <Users size={14} className="inline mr-2" />
-                Number of Guests
-              </label>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <input
-                  type="number"
-                  min="1"
-                  value={guestCount}
-                  onChange={(e) => handleGuestCountChange(e.target.value)}
-                  onBlur={handleGuestCountBlur}
-                  className="w-full px-4 py-2 text-lg font-bold text-center border border-gray-300 rounded-lg sm:w-32 sm:text-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                />
-                <div className="text-xs text-gray-500 sm:text-sm">
-                  {guestCount >= 3000
-                    ? "Large Event (3000+)"
-                    : guestCount >= 1000
-                    ? "Big Event (1000+)"
-                    : guestCount >= 500
-                    ? "Medium Event (500+)"
-                    : guestCount >= 200
-                    ? "Small Event (200+)"
-                    : "Small Gathering"}
-                </div>
-              </div>
-            </div>
-
-            {/* Cart Summary */}
-            <div className="px-4 py-3 bg-white border border-gray-200 shadow-sm sm:px-6 rounded-xl">
-              <div className="mb-1 text-sm text-gray-600">Cart Summary</div>
-              <div className="text-lg font-bold text-amber-600">
-                {totalItems} items
-              </div>
-            </div>
+          {/* Guest Count */}
+          <div className="flex items-center gap-3">
+            <Users size={16} className="text-orange-500" />
+            <input
+              type="text"
+              inputMode="numeric"
+              value={guestCount}
+              onChange={handleGuestCountChange}
+              onBlur={handleGuestCountBlur}
+              placeholder="200"
+              className="w-32 px-4 py-2 text-lg font-bold text-orange-700 bg-orange-100 border-2 border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            <span className="text-sm text-gray-600">guests</span>
           </div>
         </div>
 
-        {/* Content */}
-        {cart.length === 0 ? (
-          <EmptyCart navigateTo={navigateTo} />
-        ) : (
-          <>
-            {/* Cart Items */}
-            <div className="mb-6 overflow-hidden bg-white shadow-lg rounded-xl">
-              {cart.map((item) => (
-                <CartItem
-                  key={item.id}
-                  item={item}
-                  guestCount={parsedGuestCount}
-                  onUpdateQuantity={updateCartQuantity}
-                  onRemove={() => removeFromCart(item.id)}
-                />
-              ))}
-            </div>
+        {/* ================= SUMMARY ================= */}
+        <div className="grid grid-cols-1 gap-5 mb-8 md:grid-cols-3">
+          <SummaryCard
+            title="Cart Total"
+            icon={<DollarSign size={18} />}
+            value={cartTotal}
+            footer={`Before discounts • ${totalItems} items`}
+          />
 
-            {/* Summary */}
-            <CartSummary
-              guestCount={parsedGuestCount}
-              cartTotal={cartTotal}
-              perPersonCost={perPersonCost}
-              estimatedSavings={estimatedSavings}
-              totalItems={totalItems}
-            />
+          <SummaryCard
+            title="Total Savings"
+            icon={<TrendingDown size={18} />}
+            value={estimatedSavings}
+            badge={`${savingsPercentage}% OFF`}
+          />
 
-            {/* Actions */}
-            <div className="flex flex-col gap-4 mt-8 sm:flex-row">
-              <button
-                onClick={() => navigateTo("products")}
-                className="flex items-center justify-center flex-1 gap-2 px-6 py-4 text-base font-semibold text-gray-800 transition bg-gray-200 sm:text-lg hover:bg-gray-300 rounded-xl"
-              >
-                <ShoppingCart size={20} />
-                Continue Shopping
-              </button>
+          <SummaryCard
+            title="Final Total"
+            icon={<Sparkles size={18} />}
+            value={finalTotal}
+            footer={`$${perPersonCost.toFixed(2)} per person`}
+            strong
+          />
+        </div>
 
-              <button
-                onClick={() => navigateTo("enquiry")}
-                className="flex items-center justify-center flex-1 gap-2 px-6 py-4 text-base font-semibold text-white transition shadow-lg sm:text-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-xl hover:shadow-xl"
-              >
-                Proceed to Enquiry
-                <ArrowRight size={20} />
-              </button>
-            </div>
-
-            {/* Bulk Info */}
-            <div className="p-4 mt-8 border border-blue-200 sm:p-6 bg-blue-50 rounded-xl">
-              <h3 className="mb-3 text-base font-bold text-blue-900 sm:text-lg">
-                💡 Bulk Order Benefits
-              </h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {[
-                  ["200+ Guests", "5% Additional Discount"],
-                  ["500+ Guests", "10% Additional Discount"],
-                  ["3000+ Guests", "Custom Pricing & Support"],
-                ].map(([title, desc]) => (
-                  <div
-                    key={title}
-                    className="p-4 text-center bg-white rounded-lg"
-                  >
-                    <div className="text-xl font-bold text-blue-600 sm:text-2xl">
-                      {title}
-                    </div>
-                    <div className="text-xs text-gray-600 sm:text-sm">
-                      {desc}
-                    </div>
-                  </div>
-                ))}
+        {/* ================= CART ITEMS ================= */}
+        <div className="overflow-hidden bg-white shadow-xl rounded-3xl ring-1 ring-gray-200">
+          <div className="p-4 border-b bg-orange-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package size={20} className="text-orange-600" />
+                <h3 className="text-lg font-semibold">Your Items</h3>
               </div>
+              <span className="px-3 py-1 text-sm bg-white rounded-full shadow">
+                {totalItems} items
+              </span>
             </div>
-          </>
-        )}
+          </div>
+
+          <div className="divide-y">
+            {cart.map((item) => (
+              <CartItem
+                key={item.id}
+                item={item}
+                guestCount={parsedGuestCount}
+                onUpdateQuantity={updateCartQuantity}
+                onRemove={() => removeFromCart(item.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ================= ACTIONS ================= */}
+        <div className="flex flex-col gap-4 mt-8 sm:flex-row">
+          <button
+            onClick={() => navigateTo("products")}
+            className="flex-1 px-8 py-4 font-semibold bg-white border-2 border-gray-300 shadow rounded-xl hover:bg-gray-50"
+          >
+            Continue Shopping
+          </button>
+
+          <button
+            onClick={() => navigateTo("enquiry")}
+            className="flex items-center justify-center flex-1 gap-2 px-8 py-4 font-semibold text-white shadow bg-gradient-to-r from-orange-600 to-amber-600 rounded-xl hover:shadow-lg"
+          >
+            Proceed to Enquiry
+            <ArrowRight size={18} />
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-/* ---------- Empty Cart ---------- */
+/* ======================================================
+   SUMMARY CARD
+====================================================== */
 
-const EmptyCart = ({ navigateTo }) => (
-  <div className="p-8 text-center bg-white shadow-lg sm:p-12 rounded-xl">
-    <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full sm:w-24 sm:h-24 bg-amber-100">
-      <ShoppingCart size={40} className="text-amber-600" />
-    </div>
-    <h3 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl">
-      Your cart is empty
-    </h3>
-    <p className="max-w-md mx-auto mb-6 text-sm text-gray-600 sm:text-base">
-      Add products from our catalog to calculate costs for your event
-    </p>
-    <button
-      onClick={() => navigateTo("products")}
-      className="inline-flex items-center gap-2 px-8 py-3 text-base font-semibold text-white transition rounded-lg sm:text-lg bg-amber-600 hover:bg-amber-700"
-    >
-      Browse Products
-      <ArrowRight size={20} />
-    </button>
-  </div>
-);
-
-/* ---------- Summary ---------- */
-
-const CartSummary = ({
-  guestCount,
-  cartTotal,
-  perPersonCost,
-  estimatedSavings,
-  totalItems,
-}) => (
-  <div
-    className="p-4 mt-6 text-white shadow-lg sm:p-6 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl"
-  >
-    <h3 className="mb-6 text-xl font-bold sm:text-2xl">Cost Summary</h3>
-
-    <div className="space-y-4">
-      <div className="flex justify-between pb-3 border-b border-white/20">
-        <div>
-          <div className="text-sm opacity-90">Guests</div>
-          <div className="text-lg font-bold">{guestCount.toLocaleString()}</div>
-        </div>
-        <div className="text-right">
-          <div className="text-sm opacity-90">Items</div>
-          <div className="text-lg font-bold">{totalItems}</div>
-        </div>
+const SummaryCard = ({ title, icon, value, footer, badge, strong }) => (
+  <div className="p-6 bg-white shadow-lg rounded-2xl">
+    <div className="flex justify-between mb-2">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        {icon}
+        {title}
       </div>
-
-      <div className="flex justify-between text-base sm:text-lg">
-        <span>Total Product Cost</span>
-        <span className="font-bold">${cartTotal.toFixed(2)}</span>
-      </div>
-
-      <div className="flex justify-between text-sm opacity-90">
-        <span>Cost Per Person</span>
-        <span className="font-semibold">${perPersonCost.toFixed(2)}</span>
-      </div>
-
-      <div
-        className="flex justify-between px-4 py-3 -mx-4 text-base sm:px-6 sm:-mx-6 bg-white/10 sm:text-lg"
-      >
-        <span>Estimated Savings</span>
-        <span className="font-bold text-green-300">
-          -${estimatedSavings.toFixed(2)} (35%)
+      {badge && (
+        <span className="px-2 py-1 text-xs font-bold text-green-700 bg-green-200 rounded-full">
+          {badge}
         </span>
-      </div>
-
-      <div
-        className="flex justify-between pt-4 text-xl font-bold border-t sm:text-2xl border-white/20"
-      >
-        <span>Final Total</span>
-        <span className="text-yellow-300">${cartTotal.toFixed(2)}</span>
-      </div>
+      )}
     </div>
 
-    <p className="mt-6 text-xs italic sm:text-sm opacity-90">
-      * Prices exclude shipping. Bulk discounts applied automatically. For
-      events with 3000+ guests, contact us for custom pricing.
-    </p>
+    <div
+      className={`text-4xl font-bold ${
+        strong ? "text-orange-600" : "text-gray-800"
+      }`}
+    >
+      ${value.toFixed(2)}
+    </div>
+
+    {footer && <div className="mt-1 text-xs text-gray-600">{footer}</div>}
   </div>
 );
 

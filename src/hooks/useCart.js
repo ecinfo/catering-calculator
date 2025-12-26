@@ -1,133 +1,154 @@
 import { useState, useMemo, useEffect } from "react";
 
+/* ---------- Helpers ---------- */
+
+const getUnitPrice = (item) => {
+  let price = item.mrp || 0;
+
+  if (item.bulkDiscount && item.quantity >= 10 && item.bulkPrices) {
+    if (item.quantity >= 100) price = item.bulkPrices["100+"] ?? price;
+    else if (item.quantity >= 50) price = item.bulkPrices["50-99"] ?? price;
+    else if (item.quantity >= 10) price = item.bulkPrices["10-49"] ?? price;
+  }
+
+  return price;
+};
+
+const getDiscountRate = (guestCount) => {
+  if (guestCount >= 3000) return 0.15;
+  if (guestCount >= 500) return 0.1;
+  if (guestCount >= 200) return 0.05;
+  return 0;
+};
+
+/* ---------- Hook ---------- */
+
 export const useCart = () => {
   const [cart, setCart] = useState([]);
-  const [guestCount, setGuestCount] = useState(200);
-  const [cartItems, setCartItems] = useState({});
+  const [guestCount, setGuestCount] = useState("200");
 
-  // Load cart from localStorage on initial render
+  /* ---------- Load from storage ---------- */
   useEffect(() => {
     const savedCart = localStorage.getItem("netraCart");
     const savedGuestCount = localStorage.getItem("netraGuestCount");
-    const savedCartItems = localStorage.getItem("netraCartItems");
 
     if (savedCart) setCart(JSON.parse(savedCart));
-    if (savedGuestCount) setGuestCount(JSON.parse(savedGuestCount));
-    if (savedCartItems) setCartItems(JSON.parse(savedCartItems));
+    if (savedGuestCount) setGuestCount(savedGuestCount);
   }, []);
 
-  // Save to localStorage whenever cart changes
+  /* ---------- Save to storage ---------- */
   useEffect(() => {
     localStorage.setItem("netraCart", JSON.stringify(cart));
-    localStorage.setItem("netraGuestCount", JSON.stringify(guestCount));
-    localStorage.setItem("netraCartItems", JSON.stringify(cartItems));
-  }, [cart, guestCount, cartItems]);
+    localStorage.setItem("netraGuestCount", guestCount);
+  }, [cart, guestCount]);
 
-  const parsedGuestCount = Math.max(1, guestCount);
+  /* ---------- Guest Count ---------- */
 
-  // Calculate totals with bulk pricing
-  const cartTotal = useMemo(() => {
-    return cart.reduce((sum, item) => {
-      const basePrice = item.mrp || 0;
-      let unitPrice = basePrice;
+  const parsedGuestCount = useMemo(
+    () => Math.max(1, Number(guestCount) || 1),
+    [guestCount]
+  );
 
-      // Apply bulk discount if applicable
-      if (item.bulkDiscount && item.quantity >= 10) {
-        const quantity = item.quantity;
-        if (quantity >= 100) {
-          unitPrice = item.bulkPrices["100+"] || basePrice;
-        } else if (quantity >= 50) {
-          unitPrice = item.bulkPrices["50-99"] || basePrice;
-        } else if (quantity >= 10) {
-          unitPrice = item.bulkPrices["10-49"] || basePrice;
-        }
-      }
-
-      return sum + unitPrice * item.quantity;
-    }, 0);
-  }, [cart]);
-
-  const estimatedSavings = useMemo(() => cartTotal * 0.35, [cartTotal]);
-  const perPersonCost = useMemo(() => {
-    return cart.length > 0 ? cartTotal / parsedGuestCount : 0;
-  }, [cart, cartTotal, parsedGuestCount]);
-
-  const addToCart = (product, quantity = 1) => {
-    setCart((currentCart) => {
-      const existingItem = currentCart.find((item) => item.id === product.id);
-
-      if (existingItem) {
-        return currentCart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      } else {
-        return [...currentCart, { ...product, quantity }];
-      }
-    });
-  };
-
-  const updateCartQuantity = (productId, newQuantity) => {
-    if (newQuantity <= 0) {
-      setCart((currentCart) =>
-        currentCart.filter((item) => item.id !== productId)
-      );
-    } else {
-      setCart((currentCart) =>
-        currentCart.map((item) =>
-          item.id === productId ? { ...item, quantity: newQuantity } : item
-        )
-      );
-    }
-  };
-
-  const removeFromCart = (productId) => {
-    setCart((currentCart) =>
-      currentCart.filter((item) => item.id !== productId)
-    );
-  };
-
-  const clearCart = () => {
-    setCart([]);
-  };
-
-  const handleGuestCountChange = (value) => {
-    if (value === "") {
-      setGuestCount(1);
-    } else if (/^\d+$/.test(value)) {
-      const numValue = parseInt(value, 10);
-      if (numValue > 0) {
-        setGuestCount(numValue);
-      }
-    }
+  const handleGuestCountChange = (e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setGuestCount(value);
   };
 
   const handleGuestCountBlur = () => {
-    if (guestCount < 1) {
-      setGuestCount(1);
+    if (!guestCount || Number(guestCount) < 1) {
+      setGuestCount("1");
     }
   };
 
-  // Calculate total items in cart
-  const totalItems = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.quantity, 0);
-  }, [cart]);
+  /* ---------- Totals ---------- */
+
+  const subtotal = useMemo(() => {
+    return cart.reduce((sum, item) => {
+      const unitPrice = getUnitPrice(item);
+      return sum + unitPrice * item.quantity * parsedGuestCount;
+    }, 0);
+  }, [cart, parsedGuestCount]);
+
+  const discountRate = useMemo(
+    () => getDiscountRate(parsedGuestCount),
+    [parsedGuestCount]
+  );
+
+  const estimatedSavings = useMemo(
+    () => subtotal * discountRate,
+    [subtotal, discountRate]
+  );
+
+  const finalTotal = useMemo(
+    () => Math.max(subtotal - estimatedSavings, 0),
+    [subtotal, estimatedSavings]
+  );
+
+  const perPersonCost = useMemo(
+    () => (parsedGuestCount > 0 ? finalTotal / parsedGuestCount : 0),
+    [finalTotal, parsedGuestCount]
+  );
+
+  const totalItems = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
+
+  /* ---------- Cart Actions ---------- */
+
+  const addToCart = (product, quantity = 1) => {
+    setCart((prev) => {
+      const existing = prev.find((i) => i.id === product.id);
+      if (existing) {
+        return prev.map((i) =>
+          i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
+        );
+      }
+      return [...prev, { ...product, quantity }];
+    });
+  };
+
+  const updateCartQuantity = (id, quantity) => {
+    if (quantity <= 0) {
+      setCart((prev) => prev.filter((item) => item.id !== id));
+    } else {
+      setCart((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+      );
+    }
+  };
+
+  const removeFromCart = (id) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const clearCart = () => setCart([]);
+
+  /* ---------- Export ---------- */
 
   return {
     cart,
-    cartTotal,
+
+    /* Totals */
+    subtotal, // before discount
+    estimatedSavings,
+    finalTotal, // ✅ payable
+    perPersonCost,
+
+    /* Guests */
     guestCount,
     parsedGuestCount,
-    estimatedSavings,
-    perPersonCost,
+
+    /* Meta */
     totalItems,
+
+    /* Actions */
     addToCart,
     updateCartQuantity,
     removeFromCart,
     clearCart,
-    setGuestCount,
     handleGuestCountChange,
     handleGuestCountBlur,
+    setGuestCount,
   };
 };

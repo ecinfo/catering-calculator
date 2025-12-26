@@ -2,16 +2,17 @@ import React from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 const CartItem = ({ item, guestCount, onUpdateQuantity, onRemove }) => {
+  /* ---------- Pricing Logic ---------- */
   const calculateUnitPrice = () => {
     let unitPrice = item.mrp || 0;
 
-    if (item.bulkDiscount && item.quantity >= 10) {
+    if (item.bulkDiscount && item.quantity >= 10 && item.bulkPrices) {
       if (item.quantity >= 100) {
-        unitPrice = item.bulkPrices["100+"] || unitPrice;
+        unitPrice = item.bulkPrices["100+"] ?? unitPrice;
       } else if (item.quantity >= 50) {
-        unitPrice = item.bulkPrices["50-99"] || unitPrice;
+        unitPrice = item.bulkPrices["50-99"] ?? unitPrice;
       } else if (item.quantity >= 10) {
-        unitPrice = item.bulkPrices["10-49"] || unitPrice;
+        unitPrice = item.bulkPrices["10-49"] ?? unitPrice;
       }
     }
 
@@ -19,14 +20,18 @@ const CartItem = ({ item, guestCount, onUpdateQuantity, onRemove }) => {
   };
 
   const unitPrice = calculateUnitPrice();
-  const totalForGuests = unitPrice * item.quantity * guestCount;
 
+  // Quantity is PER GUEST
+  const totalPacks = item.quantity * guestCount;
+  const totalPrice = unitPrice * totalPacks;
+
+  /* ---------- UI ---------- */
   return (
-    <div className="flex flex-col gap-4 p-4 transition border-b border-gray-100 sm:p-6 hover:bg-gray-50">
-      {/* Top Row */}
-      <div className="flex items-start w-full gap-4">
+    <div className="flex flex-col gap-4 p-4 border-b border-gray-100 sm:p-6 hover:bg-gray-50">
+      {/* ---------- Top Row ---------- */}
+      <div className="flex items-start gap-4">
         {/* Image */}
-        <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0">
+        <div className="w-20 h-20 shrink-0 sm:w-24 sm:h-24">
           <img
             src={item.image}
             alt={item.name}
@@ -48,15 +53,15 @@ const CartItem = ({ item, guestCount, onUpdateQuantity, onRemove }) => {
 
             <button
               onClick={onRemove}
-              className="p-2 text-gray-400 transition rounded-full hover:text-red-600 hover:bg-red-50"
               aria-label="Remove item"
+              className="p-2 text-gray-400 transition rounded-full hover:text-red-600 hover:bg-red-50"
             >
               <Trash2 size={18} />
             </button>
           </div>
 
           {/* Meta */}
-          <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-600 sm:text-sm">
+          <div className="flex flex-wrap items-center gap-3 mt-2 text-xs sm:text-sm">
             <span className="px-3 py-1 font-medium rounded-full bg-amber-100 text-amber-800">
               ${unitPrice.toFixed(2)} per pack
             </span>
@@ -67,9 +72,9 @@ const CartItem = ({ item, guestCount, onUpdateQuantity, onRemove }) => {
         </div>
       </div>
 
-      {/* Controls & Price */}
+      {/* ---------- Controls & Price ---------- */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {/* Quantity */}
+        {/* Quantity (per guest) */}
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
@@ -83,7 +88,7 @@ const CartItem = ({ item, guestCount, onUpdateQuantity, onRemove }) => {
             <div className="text-lg font-bold text-gray-900 sm:text-xl">
               {item.quantity}
             </div>
-            <div className="text-xs text-gray-500">packs</div>
+            <div className="text-xs text-gray-500">packs / guest</div>
           </div>
 
           <button
@@ -94,9 +99,9 @@ const CartItem = ({ item, guestCount, onUpdateQuantity, onRemove }) => {
           </button>
 
           <div className="text-xs text-gray-600 sm:text-sm sm:ml-4">
-            × {guestCount.toLocaleString()} guests ={" "}
+            {item.quantity} × {guestCount.toLocaleString()} guests ={" "}
             <span className="font-semibold text-amber-600">
-              {(item.quantity * guestCount).toLocaleString()} units
+              {totalPacks.toLocaleString()} packs
             </span>
           </div>
         </div>
@@ -105,12 +110,12 @@ const CartItem = ({ item, guestCount, onUpdateQuantity, onRemove }) => {
         <div className="text-left sm:text-right">
           <div className="text-xl font-bold text-gray-900 sm:text-2xl">
             $
-            {totalForGuests.toLocaleString(undefined, {
+            {totalPrice.toLocaleString(undefined, {
               minimumFractionDigits: 2,
             })}
           </div>
           <div className="text-xs text-gray-500 sm:text-sm">
-            ${(unitPrice * item.quantity).toFixed(2)} × {guestCount} guests
+            ${unitPrice.toFixed(2)} × {totalPacks.toLocaleString()} packs
           </div>
         </div>
       </div>

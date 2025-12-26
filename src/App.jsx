@@ -16,6 +16,8 @@ function App() {
   const {
     cart,
     cartTotal,
+    subtotal, // ✅ correct name
+    finalTotal,
     guestCount,
     parsedGuestCount,
     estimatedSavings,
@@ -83,9 +85,9 @@ function App() {
             cart={cart}
             guestCount={guestCount}
             parsedGuestCount={parsedGuestCount}
-            cartTotal={cartTotal}
-            perPersonCost={perPersonCost}
+            cartTotal={subtotal}
             estimatedSavings={estimatedSavings}
+            perPersonCost={perPersonCost}
             handleGuestCountChange={handleGuestCountChange}
             handleGuestCountBlur={handleGuestCountBlur}
             updateCartQuantity={updateCartQuantity}
@@ -97,7 +99,7 @@ function App() {
         return (
           <EnquiryPage
             guestCount={parsedGuestCount}
-            cartTotal={cartTotal}
+            cartTotal={finalTotal} // ✅ PAYABLE
             perPersonCost={perPersonCost}
             estimatedSavings={estimatedSavings}
             cart={cart}
