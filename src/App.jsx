@@ -8,6 +8,7 @@ import EnquiryPage from "./components/EnquiryPage";
 import Footer from "./components/Footer";
 import { recipesData } from "./data/recipes";
 import { useCart } from "./hooks/useCart";
+import FlipBook from "./components/FlipBook";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("recipes");
@@ -61,6 +62,8 @@ function App() {
 
   const renderPage = () => {
     switch (currentPage) {
+      case "book":
+        return <FlipBook />;
       case "recipes":
         return <RecipeBook onViewRecipe={handleViewRecipe} />;
       case "recipe-detail":

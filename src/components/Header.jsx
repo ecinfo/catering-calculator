@@ -66,6 +66,15 @@ const Header = ({ currentPage, navigateTo, cartCount }) => {
           {/* Desktop Nav */}
           <nav className="items-center hidden gap-3 md:flex">
             <NavButton
+              page="book"
+              icon={BookOpen}
+              label="Book"
+              currentPage={currentPage}
+              navigateTo={navigateTo}
+              setMenuOpen={setMenuOpen}
+              cartCount={cartCount}
+            />
+            <NavButton
               page="recipes"
               icon={BookOpen}
               label="Recipe Book"
@@ -108,6 +117,15 @@ const Header = ({ currentPage, navigateTo, cartCount }) => {
         {menuOpen && (
           <div className="mt-4 overflow-hidden shadow-lg md:hidden bg-amber-700/90 backdrop-blur rounded-xl">
             <div className="flex flex-col divide-y divide-amber-600">
+              <NavButton
+                page="book"
+                icon={BookOpen}
+                label="Book"
+                currentPage={currentPage}
+                navigateTo={navigateTo}
+                setMenuOpen={setMenuOpen}
+                cartCount={cartCount}
+              />
               <NavButton
                 page="recipes"
                 icon={BookOpen}
